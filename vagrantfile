@@ -1,0 +1,33 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+Vagrant.configure("2") do |config|
+  config.ssh.username = 'vagrant'
+  config.ssh.password = 'vagrant'
+  if Vagrant.has_plugin? "vagrant-vbguest"
+    config.vbguest.no_install = true
+    config.vbguest.auto_update = false
+    config.vbguest.no_remote = true
+  end
+
+  config.vm.provision "shell", path: "script.sh"
+
+  config.vm.define :node1 do |node1|
+    node1.vm.box = "bento/ubuntu-22.04"
+    node1.vm.network :private_network, ip: "99.5.100.2"
+    node1.vm.hostname = "node1"
+    node1.vm.provision "shell", path: "services.sh", env: { "PROVISION_FLAG" => "true" }
+  end
+  config.vm.define :node2 do |node2|
+    node2.vm.box = "bento/ubuntu-22.04"
+    node2.vm.network :private_network, ip: "99.5.100.3"
+    node2.vm.hostname = "node2"
+    node2.vm.provision "shell", path: "services.sh", env: { "PROVISION_FLAG" => "true" }
+  end
+
+  config.vm.define :haproxy do |haproxy|
+    haproxy.vm.box = "bento/ubuntu-22.04"
+    haproxy.vm.network :private_network, ip: "99.5.100.5"
+    haproxy.vm.hostname = "haproxy"
+    haproxy.vm.provision "shell", path: "services.sh", env: { "PROVISION_FLAG" => "true" }
+  end
+ end
